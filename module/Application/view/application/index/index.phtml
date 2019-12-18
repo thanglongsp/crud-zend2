@@ -1,0 +1,25 @@
+<div class="home-index-bound">
+    <h1>List Book</h1>
+    <a href="<?php echo $this->url('application', array('action'=>'add'));?>">
+        <button type="button" class="btn btn-success"><span class="glyphicon glyphicon-plus"></span> Add</button>
+    </a>
+</div>
+<table class="table">
+    <tr>
+        <th>Id</th>
+        <th>Title</th>
+        <th>Artist</th>
+        <th>Action</th>
+    </tr>
+    <?php foreach ($listBook as $book) : ?>
+        <tr>
+            <td><?php echo $this->escapeHtml($book->id); ?></td>
+            <td><?php echo $this->escapeHtml($book->title); ?></td>
+            <td><?php echo $this->escapeHtml($book->artist); ?></td>
+            <td>
+                <a href="">Edit</a>
+                <a href="<?php echo $this->url('application', array('action'=>'delete', 'id' => $book->id));?>">Delete</a>
+            </td>
+        </tr>
+    <?php endforeach; ?>
+</table>
