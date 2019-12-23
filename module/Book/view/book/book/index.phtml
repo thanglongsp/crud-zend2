@@ -1,0 +1,40 @@
+<div class="home-index-bound">
+    <h1>List Book</h1>
+    <a href="<?php echo $this->url('book', array('action'=>'add'));?>">
+        <button type="button" class="btn btn-success"><span class="glyphicon glyphicon-plus"></span> Add</button>
+    </a>
+</div>
+<table class="table">
+    <tr>
+        <th>Title</th>
+        <th>Category</th>
+        <th>Action</th>
+    </tr>
+    <?php foreach ($listBook as $book) : ?>
+        <tr>
+            <td><?php echo $this->escapeHtml($book->title); ?></td>
+            <td><?php echo $this->escapeHtml($book->description); ?></td>
+            <td>
+                <a href="<?php echo $this->url('book', array('action'=>'edit', 'id' => $book->book_id));?>">Edit</a>
+                <span>|</span>
+                <a href="<?php echo $this->url('book', array('action'=>'delete', 'id' => $book->book_id));?>">Delete</a>
+            </td>
+        </tr>
+    <?php endforeach; ?>
+</table>
+<div class="pagination">
+        <?php
+            if($this->totalPage !== 1) {
+                if($this->currentPage != 1)
+                    echo '<a href="' . $this->url('book', array('action' => 'index', 'page' => $this->currentPage - 1)) . '">&laquo;</a>';
+                for ($i = 1; $i <= $this->totalPage; $i++) {
+                    if ($i == $this->currentPage)
+                        echo '<a class="active" href="' . $this->url('book', array('action' => 'index', 'page' => $i)) . '">' . $i . '</a>';
+                    else
+                        echo '<a href="' . $this->url('book', array('action' => 'index', 'page' => $i)) . '">' . $i . '</a>';
+                }
+                if($this->currentPage < $this->totalPage)
+                    echo '<a href="' . $this->url('book', array('action' => 'index', 'page' => $this->currentPage + 1)) . '">&raquo;</a>';
+            }
+        ?>
+</div>

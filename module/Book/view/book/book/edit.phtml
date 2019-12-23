@@ -1,0 +1,32 @@
+<?php
+$title = 'Edit book';
+$this->headTitle($title);
+?>
+    <h1><?php echo $this->escapeHtml($title); ?></h1>
+
+<?php
+$form = $this->form;
+$form->setAttribute('action', $this->url(
+    'book',
+    array(
+        'action'    => 'edit',
+        'id'        => $this->id,
+    )
+));
+$form->add(array(
+    'type' => 'Zend\Form\Element\Select',
+    'name' => 'category',
+    'options' => array(
+        'label'         => 'Category',
+        'value_options' => $this->listCategory,
+        'selected'      => true,
+    )
+));
+
+$form->prepare();
+echo $this->form()->openTag($form);
+echo $this->formHidden($form->get('book_id'));
+echo $this->formRow($form->get('title'));
+echo $this->formRow($form->get('category')->setValue($this->categoryId));
+echo $this->formSubmit($form->get('submit'));
+echo $this->form()->closeTag();
