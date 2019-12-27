@@ -12,12 +12,12 @@
     </tr>
     <?php foreach ($listBook as $book) : ?>
         <tr>
-            <td><?php echo $this->escapeHtml($book->title); ?></td>
-            <td><?php echo $this->escapeHtml($book->description); ?></td>
+            <td><?php echo $this->escapeHtml($book['title']); ?></td>
+            <td><?php echo $this->escapeHtml($book['category']); ?></td>
             <td>
-                <a href="<?php echo $this->url('book', array('action'=>'edit', 'id' => $book->book_id));?>">Edit</a>
+                <a href="<?php echo $this->url('book', array('action'=>'edit', 'id' => $book['id']));?>">Edit</a>
                 <span>|</span>
-                <a href="<?php echo $this->url('book', array('action'=>'delete', 'id' => $book->book_id));?>">Delete</a>
+                <a href="<?php echo $this->url('book', array('action'=>'delete', 'id' => $book['id']));?>">Delete</a>
             </td>
         </tr>
     <?php endforeach; ?>

@@ -75,8 +75,6 @@ class CategoryController extends AbstractActionController implements IAction
                 'action' => 'add'
             ));
         }
-        // Get the Category with the specified id.  An exception is thrown
-        // if it cannot be found, in which case go to the index page.
         try {
             $category = $this->getCategoryTable()->getCategoryById($id);
         }

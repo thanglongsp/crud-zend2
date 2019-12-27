@@ -10,6 +10,9 @@ use Zend\Mvc\Controller\AbstractActionController;
 use Zend\View\Model\ViewModel;
 use Zend\Paginator\Paginator;
 use Zend\Paginator\Adapter\Iterator as paginatorIterator;
+use Zend\Http\Request;
+use Zend\Http\Client;
+use Zend\Stdlib\Parameters;
 
 class BookController extends AbstractActionController implements IAction
 {
@@ -33,26 +36,41 @@ class BookController extends AbstractActionController implements IAction
     public function indexAction()
     {
         $currentPage = (int)$this->params()->fromRoute('page', 1);
-        $adapter = $this->getServiceLocator()->get('Zend\Db\Adapter\Adapter');
-        $table = new TableGateway('book', $adapter);
-        $query = $table->select(function (Select $select) {
-            $select->join('category', 'book.category = category.id');
-        });
-        $listBook = array();
 
-        $iteratorAdapter = new paginatorIterator($query);
-        $page = new Paginator($iteratorAdapter);
-        $page->setItemCountPerPage(10);
-        $page->setCurrentPageNumber($currentPage);
+        // Back end Java
+        $request = new Request();
+        $request->getHeaders()->addHeaders(array(
+            'Content-Type' => 'application/x-www-form-urlencoded; charset=UTF-8'
+        ));
+        $request->setUri('http://localhost:8080/api/book/page=' . $currentPage);
+        $request->setMethod('GET');
 
-        foreach ($page as $row) {
-            array_push($listBook, $row);
-        }
+        $client = new Client();
+        $response = $client->dispatch($request);
+        $data = json_decode($response->getBody(), true);
+
+        // Back end Php
+        /**
+         * $adapter = $this->getServiceLocator()->get('Zend\Db\Adapter\Adapter');
+         * $table = new TableGateway('book', $adapter);
+         * $query = $table->select(function (Select $select) {
+         * $select->join('category', 'book.category = category.id');
+         * });
+         * $listBook = array();
+         *
+         * $iteratorAdapter = new paginatorIterator($query);
+         * $page = new Paginator($iteratorAdapter);
+         * $page->setItemCountPerPage(10);
+         * $page->setCurrentPageNumber($currentPage);
+         *
+         * foreach ($page as $row) {
+         * array_push($listBook, $row);
+         * }*/
 
         return new ViewModel(
             array(
-                'listBook' => $listBook,
-                'totalPage' => $page->count(),
+                'listBook' => $data['content'],
+                'totalPage' => $data['totalPages'],
                 'currentPage' => $currentPage
             )
         );
@@ -61,6 +79,7 @@ class BookController extends AbstractActionController implements IAction
     /** add new book **/
     public function addAction()
     {
+        /** backend php */
         $form = new BookForm();
         $form->get('submit')->setValue('Add');
         $request = $this->getRequest();
@@ -71,9 +90,26 @@ class BookController extends AbstractActionController implements IAction
             $form->setData($request->getPost());
 
             if ($form->isValid()) {
-                $book->exchangeArray($form->getData());
-                $this->getBookTable()->addBook($book);
+
+                /** Back end java */
+                $req = new Request();
+                $req->getHeaders()->addHeaders(array(
+                    'Content-Type' => 'application/x-www-form-urlencoded; charset=UTF-8'
+                ));
+                $req->setUri("http://localhost:8080/api/book/create");
+                $req->setMethod('POST');
+                $req->setPost(new Parameters(array('title' => $form->get('title')->getValue(), 'category' => $this->getRequest()->getPost('category'))));
+                $client = new Client();
+                $response = $client->dispatch($req);
+                $data = json_decode($response->getBody(), true);
+
+                /** Php backend
+                 * $book->exchangeArray($form->getData());
+                 * $this->getBookTable()->addBook($book);
+                 */
+
                 return $this->redirect()->toRoute('book');
+
             }
         }
 
@@ -88,8 +124,7 @@ class BookController extends AbstractActionController implements IAction
     /** Edit new book **/
     public function editAction()
     {
-        $id = (int)$this->params()->fromRoute('id', 0);
-
+        $id = $this->params()->fromRoute('id', 0);
         if (!$id) {
             return $this->redirect()->toRoute('book', array(
                 'action' => 'add'
@@ -112,7 +147,27 @@ class BookController extends AbstractActionController implements IAction
             $form->setInputFilter($book->getInputFilter());
             $form->setData($request->getPost());
             if ($form->isValid()) {
-                $this->getBookTable()->addBook($book);
+
+                /** Back end java */
+                $req = new Request();
+                $req->getHeaders()->addHeaders(array(
+                    'Content-Type' => 'application/x-www-form-urlencoded; charset=UTF-8'
+                ));
+                $req->setUri("http://localhost:8080/api/book/update");
+                $req->setMethod('POST');
+                $id = $this->params()->fromRoute('id');
+                $title = $form->get('title')->getValue();
+                $category = $this->getRequest()->getPost('category');
+
+                $req->setPost(new Parameters(array('id' => $id, 'title' => $title, 'category' => $category)));
+                $client = new Client();
+                $response = $client->dispatch($req);
+                $data = json_decode($response->getBody(), true);
+
+                /** Backend php
+                 * $this->getBookTable()->addBook($book);
+                 */
+
                 return $this->redirect()->toRoute('book');
             }
         }
@@ -128,7 +183,22 @@ class BookController extends AbstractActionController implements IAction
     public function deleteAction()
     {
         $id = $this->getEvent()->getRouteMatch()->getParam('id');
-        $this->getBookTable()->deleteBook($id);
+
+        // Back end Java
+        $request = new Request();
+        $request->getHeaders()->addHeaders(array(
+            'Content-Type' => 'application/x-www-form-urlencoded; charset=UTF-8'
+        ));
+        $request->setUri('http://localhost:8080/api/book/delete/' . $id);
+        $request->setMethod('GET');
+
+        $client = new Client();
+        $response = $client->dispatch($request);
+
+        /** backend php
+         * $this->getBookTable()->deleteBook($id);
+         */
+
         return $this->redirect()->toRoute('book');
     }
 
